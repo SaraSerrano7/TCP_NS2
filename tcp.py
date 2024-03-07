@@ -283,14 +283,16 @@ def computing_timeout(trace: list[str]):
                 rtt_active = 1
 
                 packets_sent.append(current_packet)
+                print("added: " + str(current_packet.seq_num))
                 # añadir paquete a los que esperan ack
                 # rtt_seq = nseq # ???
 
             # si el paquete que llega ya se ha enviado --> retransmision --> ha habido timeout
             already_sent = [sent_packet.seq_num for sent_packet in packets_sent if sent_packet.time != current_packet.time]
+            print(str(current_packet.time) + ", packets sent: " + str(already_sent))
             if current_packet.seq_num in already_sent:
                 print("retransmitted: " + current_packet.to_string())
-            #     rtt_active = 0
+                rtt_active = 0
 
         if current_packet.event_type == 'r' and current_packet.target == 1 and current_packet.segment_type == 'ack':
 
@@ -304,6 +306,7 @@ def computing_timeout(trace: list[str]):
             # print(current_packet.seq_num == matching_packet[0].seq_num)
 
             if matching_packet:
+                print("matching_packet: " + str(len(matching_packet)))
                 rtt = current_packet.time - matching_packet[0].time
                 if rtt > timeout:
                     print("timeout! - " + current_packet.to_string())
