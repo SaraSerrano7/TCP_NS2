@@ -1,4 +1,5 @@
 import matplotlib
+
 matplotlib.use('TkAgg')  # Use the TkAgg backend or another suitable one
 import matplotlib.pyplot as plt
 
@@ -64,15 +65,12 @@ def calculate_rto():
     with open('files/problem3_v2/sor.slow10', 'r') as file:
         trace_data = file.read()
 
-
-
     # Parse the trace data
     lines = trace_data.strip().split('\n')
     # print(lines)
 
     # result = computing_timeout(lines)
     # print(result)
-
 
     # lines = trace_data_2.strip().split('\n')
     # time = []
@@ -91,7 +89,7 @@ def calculate_rto():
     # plt.grid(True)
     # plt.show()
 
-###############################3
+    ###############################3
     # rto = 1 # podria empezar por 3?
     # RTT = find_rtt(lines)
     # print(RTT)
@@ -99,14 +97,14 @@ def calculate_rto():
     # RTT = calculate_trace_rto(RTT)
 
     RTT = computing_timeout(lines)
-    print(RTT)
+    # print(RTT)
 
     plot_time = []
     plot_rto = []
     for line in RTT:
         time = line[0]
         rto = line[1]
-        # print(type(time), type(rto))
+
         plot_time.append(time)
         plot_rto.append(rto)
     #     t, cwnd = map(float, line.split())
@@ -114,6 +112,11 @@ def calculate_rto():
     #     congestion_window.append(cwnd)
     #
     # Plot congestion window over time
+    # print(RTT)
+
+    plot_time, plot_rto = improve_rto(plot_time, plot_rto)
+    # print(plot_time, plot_rto)
+
     plt.plot(plot_time, plot_rto, color='blue', label='calculated')
 
     with open('files/problem3_v2/to.slow10.rtt', 'r') as file:
@@ -128,6 +131,7 @@ def calculate_rto():
 
     # plot_real_rto = [line.split()[1] for line in to_lines]
     # print(plot_real_rto)
+    # print(real_rto_list)
     plt.plot(real_time_list, real_rto_list, color='red', label='simulated')
 
     plt.xlabel('Time')
@@ -144,8 +148,6 @@ def calculate_rto():
     #######################
     # Let's find rto_ first
     #######################
-
-
 
     # print(lines)
     # find_RTT(lines)
@@ -173,6 +175,37 @@ def calculate_rto():
     # plt.legend()
     # plt.grid(True)
     # plt.show()
+
+
+def improve_rto(plot_time: list[float], plot_rto: list[float]):
+    improved_time = []
+    improved_rto = []
+
+    rto_counter = 3
+    time_counter = 0.00
+    time_tick = 0.01
+
+    for time, rto in zip(plot_time, plot_rto):
+        time = round(time, 2)
+
+        while time_counter < time:
+
+            # if time_counter < time:
+            improved_time.append(time_counter)
+            improved_rto.append(rto_counter)
+            time_counter += time_tick
+            print(time_counter, rto_counter)
+
+
+        else:
+            improved_time.append(time)
+            improved_rto.append(rto)
+            rto_counter = rto
+            print(time, rto)
+
+    return improved_time, improved_rto
+
+
 def calculate_trace_rto(rtt):
     rto_list = []
 
@@ -183,8 +216,8 @@ def calculate_trace_rto(rtt):
     # actual_dev = abs(rtt_init - actual_rtt)
     # rto = 4 * dev_init + rtt_init
 
-    alpha = 7/8 #1/8
-    beta = 1/4
+    alpha = 7 / 8  # 1/8
+    beta = 1 / 4
 
     rtt_init = 3
     dev_init = 0
@@ -195,26 +228,25 @@ def calculate_trace_rto(rtt):
         dev_init = dev_init + beta * (abs(diff) - dev_init)
         rto = (rtt_init + 4 * dev_init)
         rto_list.append([packet[0], rto])
-###############
-        # rtt_init = alpha * rtt_init + (1 - alpha) * actual_rtt
-        # dev_init = beta * dev_init + (1 - beta) * actual_dev
-        # rto = (4 * dev_init + rtt_init)
-        # rto_list.append([packet[0], rto])
-        # actual_rtt = packet[1]
-        # actual_dev = abs(rtt_init - actual_rtt)
-##########################3
-        # rtt_new = alpha * rtt_init + (1 - alpha) * rtt_new
-        # dev_new = beta * dev_init + (1 - beta) * dev_new
-        # rto_new = 4 * dev_new + rtt_new
-        # rto_list.append([packet[0], rto_new])
+    ###############
+    # rtt_init = alpha * rtt_init + (1 - alpha) * actual_rtt
+    # dev_init = beta * dev_init + (1 - beta) * actual_dev
+    # rto = (4 * dev_init + rtt_init)
+    # rto_list.append([packet[0], rto])
+    # actual_rtt = packet[1]
+    # actual_dev = abs(rtt_init - actual_rtt)
+    ##########################3
+    # rtt_new = alpha * rtt_init + (1 - alpha) * rtt_new
+    # dev_new = beta * dev_init + (1 - beta) * dev_new
+    # rto_new = 4 * dev_new + rtt_new
+    # rto_list.append([packet[0], rto_new])
 
     return rto_list
 
+    # rtt_new = packet[1]
+    # packet_arrival = packet[0]
+    # dev_new = abs(rto_init - rtt_new)
 
-
-        # rtt_new = packet[1]
-        # packet_arrival = packet[0]
-        # dev_new = abs(rto_init - rtt_new)
 
 def computing_timeout(trace: list[str]):
     first_packet = True
@@ -223,8 +255,8 @@ def computing_timeout(trace: list[str]):
     timeouts = []
     third_dup = []
 
-    alpha = 1/8
-    beta = 1/4
+    alpha = 1 / 8
+    beta = 1 / 4
     timeout = 3
     rttvar = 0
     srtt = None
@@ -243,9 +275,9 @@ def computing_timeout(trace: list[str]):
             # paquete enviado
             # packets_timer[current_packet] = rtt_active
 
-            if totimer_active == 0:
-                totimer = timeout
-                totimer_active = 1
+            # if totimer_active == 0:
+            #     totimer = timeout
+            #     totimer_active = 1
 
             if rtt_active == 0:
                 rtt_active = 1
@@ -253,19 +285,30 @@ def computing_timeout(trace: list[str]):
                 packets_sent.append(current_packet)
                 # añadir paquete a los que esperan ack
                 # rtt_seq = nseq # ???
+
+            # si el paquete que llega ya se ha enviado --> retransmision --> ha habido timeout
+            already_sent = [sent_packet.seq_num for sent_packet in packets_sent if sent_packet.time != current_packet.time]
+            if current_packet.seq_num in already_sent:
+                print("retransmitted: " + current_packet.to_string())
+            #     rtt_active = 0
+
         if current_packet.event_type == 'r' and current_packet.target == 1 and current_packet.segment_type == 'ack':
 
-            totimer
+            # totimer
+
+            if not packets_sent:
+                rtt_active = 0
 
             matching_packet = [packet for packet in packets_sent if packet.seq_num == current_packet.seq_num]
-            print(str(matching_packet) + ' - ' + current_packet.to_string())
+            # print(str(matching_packet) + ' - ' + current_packet.to_string())
             # print(current_packet.seq_num == matching_packet[0].seq_num)
 
             if matching_packet:
                 rtt = current_packet.time - matching_packet[0].time
                 if rtt > timeout:
+                    print("timeout! - " + current_packet.to_string())
                     rtt_active = 0
-            else:
+            else:  # duplicated ack
                 if current_packet.seq_num in third_dup:
                     print('third!')
                     rtt_active = 0
@@ -274,15 +317,14 @@ def computing_timeout(trace: list[str]):
                     print('duplicate!' + current_packet.to_string())
                     third_dup.append(current_packet.seq_num)
 
-            if rtt_active == 1 and matching_packet and current_packet.seq_num == matching_packet[0].seq_num: #in [packet.seq_num for packet in packets_sent]: #nack == rtt_seq:
-
-
+            if rtt_active == 1 and matching_packet and current_packet.seq_num == matching_packet[0].seq_num:
+                # in [packet.seq_num for packet in packets_sent]: #nack == rtt_seq:
 
                 if first_packet:
                     first_packet = False
                     rtt = current_packet.time - matching_packet[0].time
                     srtt = rtt
-                    rttvar = rtt/2
+                    rttvar = rtt / 2
                     timeout = srtt + 4 * rttvar
                     if timeout < 0.01:
                         timeout = 0.01
@@ -291,9 +333,10 @@ def computing_timeout(trace: list[str]):
                 else:
                     rtt = current_packet.time - matching_packet[0].time
                     diff = rtt - srtt
-                    srtt = 7/8 * srtt + 1/8 * rtt
-                    rttvar = 3/4 * rttvar + 1/4 * abs(diff)
+                    srtt = (7 / 8) * srtt + (1 / 8) * rtt
+                    rttvar = (3 / 4) * rttvar + (1 / 4) * abs(diff)
                     timeout = srtt + 4 * rttvar
+                    print("Calculated: " + str(current_packet.time) + ", " + str(timeout))
                     if timeout < 0.01:
                         timeout = 0.01
                     # timeout *= 0.01
@@ -304,7 +347,7 @@ def computing_timeout(trace: list[str]):
                 # timeouts.append([current_packet.time, timeout])
                 # packet_index = packets_sent.index(matching_packet[0])
                 packets_sent.remove(matching_packet[0])
-            rtt_active = 0 # todo: change to boolean
+                rtt_active = 0  # todo: change to boolean
 
             # esta comprobacion va aqui?
             # if current_packet.time - [pack] > timeout:
@@ -316,13 +359,16 @@ def computing_timeout(trace: list[str]):
             #     rtt_active = 0
     return timeouts
 
+
 def get_timeout():
     # Ceil up to a minimoum value: 0.01
     return 0.01
     pass
 
+
 def calculate_cw(trace: list[str]):
     pass
+
 
 # todo warning: el rto se multiplica por el timetick!
 def extend_rtt_time(rtt):
@@ -330,21 +376,21 @@ def extend_rtt_time(rtt):
     # rtt por cada 0.01s. Vamos a asumir que entre paquetes se mantiene igual
     # ordered_rtt = rtt.copy()
     # ordered_rtt.sort(key=lambda x: float(x[0]))
-        # sorted(rtt, )
+    # sorted(rtt, )
     # print(ordered_rtt)
     rto = 3.0
     extended_rtt = []
     timeTick = 0.01
-    print(rtt)
+    # print(rtt)
     srtt = rtt[0][1]
-    alpha = 7/8
-    beta = 1/4
+    alpha = 7 / 8
+    beta = 1 / 4
     rttvar = rtt[0][1] / 2
-    print(f'first srtt: {srtt}')
+    # print(f'first srtt: {srtt}')
     for packet in rtt:
         srtt = alpha * packet[1] + (1 - alpha) * srtt
         rttvar = (1 - beta) * rttvar + beta * abs(srtt - packet[1])
-        rto = (srtt + 4 * rttvar) #* timeTick
+        rto = (srtt + 4 * rttvar)  # * timeTick
         extended_rtt.append([packet[0], rto])
 
     # while timeTick <= 200.0:
@@ -357,8 +403,9 @@ def extend_rtt_time(rtt):
     # while time < 200.0:
     #     rtt_moment = rtt[0]
     #     time += 0.01
-    print(len(extended_rtt))
+    # print(len(extended_rtt))
     return extended_rtt
+
 
 def find_rtt(trace: list[str]):
     sent = []
@@ -372,12 +419,12 @@ def find_rtt(trace: list[str]):
         # print(line[0])
         # print(line[2])
 
-
         #  and line[2] == "1"
-        if line[0] == '-' and line[4] == 'tcp': # nos quedamos con los paquetes del agente tcp
+        if line[0] == '-' and line[4] == 'tcp':  # nos quedamos con los paquetes del agente tcp
             # print('sent')
             # print(line)
-            pkt = Packet(line[0], float(line[1]), int(line[2]), int(line[3]), line[4], int(line[5]), line[6], int(line[7]), line[8], line[9],
+            pkt = Packet(line[0], float(line[1]), int(line[2]), int(line[3]), line[4], int(line[5]), line[6],
+                         int(line[7]), line[8], line[9],
                          int(line[10]), int(line[11]))
             sent.append(pkt)
             rtt.append(0.0)
@@ -389,20 +436,20 @@ def find_rtt(trace: list[str]):
                 # print(f'{p.source} == {line[3]}, {p.target} == {line[2]}')
                 if p.seq_num == int(line[10]) and p.source == int(line[3]):
                     # print('received' + p.to_string())
-                    print(line[1], line[10])
+                    # print(line[1], line[10])
                     pkt_index = sent.index(p)
                     arrival_time = float(line[1])
                     rtt_time = arrival_time - p.time
                     rtt[pkt_index] = [round(float(line[1]), 2), rtt_time]
-                    rtt2.append([round(float(line[1]), 2), rtt_time]) # todo maybe deberia appendear el paquete y su rtt
+                    rtt2.append(
+                        [round(float(line[1]), 2), rtt_time])  # todo maybe deberia appendear el paquete y su rtt
                     break
     # print(sent)
     # print(rtt)
-    print(len(sent), len(rtt))
+    # print(len(sent), len(rtt))
 
     # return rtt
     return rtt2
-
 
 
 if __name__ == '__main__':
