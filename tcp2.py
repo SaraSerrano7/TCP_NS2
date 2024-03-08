@@ -121,6 +121,7 @@ def computing_timeout(trace: list[str]):
     second_dup = []
     third_dup = []
 
+    queue = []
 
     alpha = 1 / 8
     beta = 1 / 4
@@ -152,9 +153,11 @@ def computing_timeout(trace: list[str]):
         if current_packet.event_type == '-' and current_packet.source == 1 and current_packet.segment_type == 'tcp':
             already_sent = [packet.seq_num for packet in packets_sent]
             print(str(current_packet.time) + " waiting for " + str(already_sent))
-            if current_packet.seq_num in already_sent:
-                print(str(current_packet.time) + " timed out " + str(current_packet.seq_num))
-                rtt_active = 0
+            # if current_packet.seq_num in already_sent:
+            #     print(str(current_packet.time) + " timed out " + str(current_packet.seq_num))
+            #     rtt_active = 0
+            if current_packet.seq_num in [packet.seq_num for packet in queue]:
+                print(str(current_packet.time) + " sending pending packet " + str(current_packet.seq_num))
 
             if rtt_active == 0:
                 rtt_active = 1
@@ -162,7 +165,7 @@ def computing_timeout(trace: list[str]):
                 print(str(current_packet.time) + " sent " + str(current_packet.seq_num))
             else:
                 print(str(current_packet.time) + " can't send " + str(current_packet.seq_num))
-
+                queue.append(current_packet)
 
 
         # IF ACK RECEIVED
@@ -170,11 +173,6 @@ def computing_timeout(trace: list[str]):
             print(str(current_packet.time) + " received " + str(current_packet.seq_num))
             if rtt_active == 1 and current_packet.seq_num in [sent.seq_num for sent in packets_sent]:
                 matching_packet = [sent for sent in packets_sent if sent.seq_num == current_packet.seq_num][0]
-
-                rtt = current_packet.time - matching_packet.time
-                if rtt > timeout:
-                    print((str(current_packet.time) + " timeout! " + str(current_packet.seq_num)))
-                    rtt_active = 0
 
                 if first_packet:
                     first_packet = False
@@ -202,6 +200,15 @@ def computing_timeout(trace: list[str]):
                 rtt_active = 0
             else:
                 print(str(current_packet.time) + " didnt expect " + str(current_packet.seq_num))
+                pending_packet = [packet for packet in queue if packet.seq_num == current_packet.seq_num]
+                for packet in pending_packet:
+                    print(str(current_packet.time) + " pending packets " + str(packet.seq_num))
+                if pending_packet and current_packet.seq_num in pending_packet:#current_packet.seq_num in [packet.seq_num for packet in queue]:
+                    print(str(current_packet.time) + " conno dio da! " + str(current_packet.seq_num))
+                    print(queue)
+                    print(current_packet)
+                    queue.remove(current_packet)
+                    rtt_active = 0
     return timeouts
 
 
