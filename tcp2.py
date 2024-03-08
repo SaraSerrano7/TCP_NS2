@@ -149,6 +149,15 @@ def computing_timeout(trace: list[str]):
                 packets_sent.remove(sent)
                 rtt_active = 0
 
+        for pending_packet in queue:
+            sent_time = pending_packet.time
+            current_time = current_packet.time
+            fake_rtt = current_time - sent_time
+            if fake_rtt > timeout:
+                print(str(current_packet.time) + " pending packet timedout! " + str(pending_packet.seq_num))
+                queue.remove(pending_packet)
+                # rtt_active = 0
+
 
         # pending_packet = [packet for packet in queue if packet.seq_num == current_packet.seq_num]
         # if pending_packet:
@@ -157,6 +166,8 @@ def computing_timeout(trace: list[str]):
 
         # IF PACKET SENT
         if current_packet.event_type == '-' and current_packet.source == 1 and current_packet.segment_type == 'tcp':
+
+
             already_sent = [packet.seq_num for packet in packets_sent]
             print(str(current_packet.time) + " waiting for " + str(already_sent))
             # if current_packet.seq_num in already_sent:
@@ -166,7 +177,11 @@ def computing_timeout(trace: list[str]):
                 print(str(current_packet.time) + " sending pending packet " + str(current_packet.seq_num))
                 pending_packet = [packet for packet in queue if packet.seq_num == current_packet.seq_num][0]
                 print(str(current_packet.time) + " retransmittion from " + str(pending_packet.time))
-                if current_packet.time - pending_packet.time > timeout:
+                rtt_pending_packet = current_packet.time - pending_packet.time
+                print(str(current_packet.time) + " rtt: " + str(rtt_pending_packet))
+                print(str(current_packet.time) + " timeout timer " + str(timeout))
+                print(rtt_pending_packet > timeout)
+                if rtt_pending_packet > timeout:
                     rtt_active = 0
 
             if rtt_active == 0:
