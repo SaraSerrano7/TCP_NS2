@@ -118,6 +118,7 @@ def computing_timeout(trace: list[str]):
     first_dup = []
     second_dup = []
     third_dup = False
+    no_more_packets = 0.0
 
     queue = []
 
@@ -129,7 +130,7 @@ def computing_timeout(trace: list[str]):
 
     rtt_active = 0
 
-    totimer = None
+    totimer = 0.0
     totimer_active = 0
 
     for line in trace:
@@ -180,7 +181,8 @@ def computing_timeout(trace: list[str]):
                 if rtt_pending_packet > timeout:
                     rtt_active = 0
 
-            if third_dup:
+            # if third_dup:
+            if current_packet.time < no_more_packets:
                 queue.append(current_packet)
                 third_dup = False
                 continue
@@ -234,6 +236,7 @@ def computing_timeout(trace: list[str]):
                     print(str(current_packet.time) + " third dup! " + str(current_packet.seq_num))
                     print(str(current_packet.time) + " wont accept packets until " + str(current_packet.time + timeout))
                     third_dup = True
+                    no_more_packets = current_packet.time + timeout
                     duplicates.pop(current_packet.seq_num)
                     rtt_active = 0
                 else:
