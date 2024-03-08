@@ -145,7 +145,7 @@ def computing_timeout(trace: list[str]):
             current_time = current_packet.time
             fake_rtt = current_time - sent_time
             if fake_rtt > timeout:
-                print(str(current_packet.time) + " timedout! " + str(current_packet.seq_num))
+                print(str(current_packet.time) + " timedout! " + str(sent.seq_num))
                 packets_sent.remove(sent)
                 rtt_active = 0
 
@@ -181,7 +181,7 @@ def computing_timeout(trace: list[str]):
         # IF ACK RECEIVED
         if current_packet.event_type == 'r' and current_packet.target == 1 and current_packet.segment_type == 'ack':
             print(str(current_packet.time) + " received " + str(current_packet.seq_num))
-            if rtt_active == 1 and current_packet.seq_num in [sent.seq_num for sent in packets_sent]:
+            if current_packet.seq_num in [sent.seq_num for sent in packets_sent]:
                 matching_packet = [sent for sent in packets_sent if sent.seq_num == current_packet.seq_num][0]
 
                 if first_packet:
@@ -211,6 +211,7 @@ def computing_timeout(trace: list[str]):
             else:
                 print(str(current_packet.time) + " didnt expect " + str(current_packet.seq_num))
                 print("queue: " + str([packet.seq_num for packet in queue]))
+
 
 
                 if current_packet.seq_num not in duplicates.keys():
