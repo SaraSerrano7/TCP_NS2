@@ -98,8 +98,6 @@ def improve_rto(plot_time: list[float], plot_rto: list[float]):
             improved_rto.append(rto_counter)
             time_counter += time_tick
             # print(time_counter, rto_counter)
-
-
         else:
             improved_time.append(time)
             improved_rto.append(rto)
@@ -119,7 +117,7 @@ def computing_timeout(trace: list[str]):
 
     first_dup = []
     second_dup = []
-    third_dup = []
+    third_dup = False
 
     queue = []
 
@@ -158,7 +156,6 @@ def computing_timeout(trace: list[str]):
                 queue.remove(pending_packet)
                 # rtt_active = 0
 
-
         # pending_packet = [packet for packet in queue if packet.seq_num == current_packet.seq_num]
         # if pending_packet:
         #     # el paquete que estamos
@@ -166,7 +163,6 @@ def computing_timeout(trace: list[str]):
 
         # IF PACKET SENT
         if current_packet.event_type == '-' and current_packet.source == 1 and current_packet.segment_type == 'tcp':
-
 
             already_sent = [packet.seq_num for packet in packets_sent]
             print(str(current_packet.time) + " waiting for " + str(already_sent))
@@ -184,6 +180,11 @@ def computing_timeout(trace: list[str]):
                 if rtt_pending_packet > timeout:
                     rtt_active = 0
 
+            if third_dup:
+                queue.append(current_packet)
+                third_dup = False
+                continue
+
             if rtt_active == 0:
                 rtt_active = 1
                 packets_sent.append(current_packet)
@@ -191,7 +192,6 @@ def computing_timeout(trace: list[str]):
             else:
                 print(str(current_packet.time) + " can't send " + str(current_packet.seq_num))
                 queue.append(current_packet)
-
 
         # IF ACK RECEIVED
         if current_packet.event_type == 'r' and current_packet.target == 1 and current_packet.segment_type == 'ack':
@@ -215,7 +215,7 @@ def computing_timeout(trace: list[str]):
                     diff = rtt - srtt
                     srtt = (7 / 8) * srtt + (1 / 8) * rtt
                     rttvar = (3 / 4) * rttvar + (1 / 4) * abs(diff)
-                    timeout = round(srtt + 4 * rttvar,2 )
+                    timeout = round(srtt + 4 * rttvar, 2)
                     print("Calculated: " + str(current_packet.time) + ", " + str(timeout))
                     if timeout < 0.01:
                         timeout = 0.01
@@ -227,13 +227,13 @@ def computing_timeout(trace: list[str]):
                 print(str(current_packet.time) + " didnt expect " + str(current_packet.seq_num))
                 print("queue: " + str([packet.seq_num for packet in queue]))
 
-
-
                 if current_packet.seq_num not in duplicates.keys():
                     duplicates[current_packet.seq_num] = 1
                     print(str(current_packet.time) + " first duplicate " + str(current_packet.seq_num))
                 elif duplicates[current_packet.seq_num] == 3:
                     print(str(current_packet.time) + " third dup! " + str(current_packet.seq_num))
+                    print(str(current_packet.time) + " wont accept packets until " + str(current_packet.time + timeout))
+                    third_dup = True
                     duplicates.pop(current_packet.seq_num)
                     rtt_active = 0
                 else:
@@ -244,9 +244,7 @@ def computing_timeout(trace: list[str]):
                 for packet in pending_packet:
                     print(str(current_packet.time) + " pending packets " + str(packet.seq_num))
 
-
-
-                if pending_packet and current_packet.seq_num in pending_packet:#current_packet.seq_num in [packet.seq_num for packet in queue]:
+                if pending_packet and current_packet.seq_num in pending_packet:  # current_packet.seq_num in [packet.seq_num for packet in queue]:
                     print(str(current_packet.time) + " conno dio da! " + str(current_packet.seq_num))
                     print(queue)
                     print(current_packet)
@@ -273,7 +271,6 @@ def computing_timeout(trace: list[str]):
             #
 
     return timeouts
-
 
 
 if __name__ == '__main__':
