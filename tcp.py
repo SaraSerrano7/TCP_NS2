@@ -253,7 +253,13 @@ def computing_timeout(trace: list[str]):
     packets_sent = []
     packets_timer = {}
     timeouts = []
+
+    duplicates = {}
+
+    first_dup = []
+    second_dup = []
     third_dup = []
+
 
     alpha = 1 / 8
     beta = 1 / 4
@@ -271,14 +277,27 @@ def computing_timeout(trace: list[str]):
         current_packet = Packet(data[0], float(data[1]), int(data[2]), int(data[3]), data[4], int(data[5]),
                                 data[6], int(data[7]), data[8], data[9], int(data[10]), int(data[11]))
 
+        # for sent in packets_sent:
+        #     sent_time = sent.time
+        #     current_time = current_packet.time
+        #     fake_rtt = current_time - sent_time
+        #     if fake_rtt > timeout:
+                # print(str(current_packet.time) + " timedout! " + str(current_packet.seq_num))
+                # packets_sent.remove(sent)
+                # rtt_active = 0
+
+        # IF PACKET SENT
         if current_packet.event_type == '-' and current_packet.source == 1 and current_packet.segment_type == 'tcp':
             # paquete enviado
             # packets_timer[current_packet] = rtt_active
+            print(str(current_packet.time) + " - reading packet " + str(current_packet.seq_num) + " - timer " + str(rtt_active))
+            # cuenta atrás para el timeout
+            if totimer_active == 0:
+                totimer = timeout
+                totimer_active = 1
 
-            # if totimer_active == 0:
-            #     totimer = timeout
-            #     totimer_active = 1
 
+            # Se cuenta lo que tarda en ir y volver
             if rtt_active == 0:
                 rtt_active = 1
 
@@ -294,12 +313,16 @@ def computing_timeout(trace: list[str]):
                 print("retransmitted: " + current_packet.to_string())
                 rtt_active = 0
 
-        if current_packet.event_type == 'r' and current_packet.target == 1 and current_packet.segment_type == 'ack':
+                # totimer = 0
+
+        # IF ACK RECEIVED
+        elif current_packet.event_type == 'r' and current_packet.target == 1 and current_packet.segment_type == 'ack':
 
             # totimer
 
             if not packets_sent:
                 rtt_active = 0
+                print("no packets were sent")
 
             matching_packet = [packet for packet in packets_sent if packet.seq_num == current_packet.seq_num]
             # print(str(matching_packet) + ' - ' + current_packet.to_string())
@@ -312,13 +335,39 @@ def computing_timeout(trace: list[str]):
                     print("timeout! - " + current_packet.to_string())
                     rtt_active = 0
             else:  # duplicated ack
+
+                # if current_packet.seq_num not in duplicates.keys():
+                #     duplicates[current_packet.seq_num] = 1
+                # else:
+                #     duplicates[current_packet.seq_num] += 1
+                #
+                # if duplicates[current_packet.seq_num] == 3:
+                #     print(str(current_packet.time) + " " + str(duplicates[current_packet.seq_num]) + " duplicates of " + str(current_packet.seq_num))
+                #     rtt_active = 0
+                #     duplicates.pop(current_packet.seq_num)
+
+
+
+
                 if current_packet.seq_num in third_dup:
-                    print('third!')
+                # if duplicates.count(current_packet.seq_num) == 3:
+                    # TODO: esto debe ser al tercer duplicado. third_dup tiene la 3a copia --> segundo duplicado!!
+                    # print(str(current_packet.time) + ' third ' + str(current_packet.seq_num) + '! - ' + str(duplicates.count(current_packet.seq_num)))
+                    # print(str(duplicates.count(current_packet.seq_num)) + "duplicated from " + str(current_packet.seq_num))
                     rtt_active = 0
                     third_dup.remove(current_packet.seq_num)
+                    # duplicates.remove(current_packet.seq_num)
+                    # duplicates.remove(current_packet.seq_num)
+                    # duplicates.remove(current_packet.seq_num)
                 else:
-                    print('duplicate!' + current_packet.to_string())
+                    print('duplicate! ' + current_packet.to_string())
+
                     third_dup.append(current_packet.seq_num)
+                    # duplicates.append(current_packet.seq_num)
+                    # print(
+                    #     str(current_packet.seq_num) + " has " + str(duplicates.count(current_packet.seq_num)) + " dups")
+
+
 
             if rtt_active == 1 and matching_packet and current_packet.seq_num == matching_packet[0].seq_num:
                 # in [packet.seq_num for packet in packets_sent]: #nack == rtt_seq:
@@ -351,6 +400,7 @@ def computing_timeout(trace: list[str]):
                 # packet_index = packets_sent.index(matching_packet[0])
                 packets_sent.remove(matching_packet[0])
                 rtt_active = 0  # todo: change to boolean
+                print("packet " + str(current_packet.seq_num) + " accepted")
 
             # esta comprobacion va aqui?
             # if current_packet.time - [pack] > timeout:
