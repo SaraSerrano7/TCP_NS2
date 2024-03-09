@@ -182,10 +182,10 @@ def computing_timeout(trace: list[str]):
                     rtt_active = 0
 
             # if third_dup:
-            if current_packet.time < no_more_packets:
-                queue.append(current_packet)
-                third_dup = False
-                continue
+            # if current_packet.time < no_more_packets:
+                # queue.append(current_packet)
+                # third_dup = False
+                # continue
 
             if rtt_active == 0:
                 rtt_active = 1
