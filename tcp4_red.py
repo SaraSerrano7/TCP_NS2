@@ -41,35 +41,54 @@ class Packet:
 
 def calculate_rto():
 
+    # Plot Reno CW without RED
     with open('files/problem3_v3/cw.reno1', 'r') as file:
         trace_data = file.read()
 
     # Parse the trace data
     lines = trace_data.strip().split('\n')
-    reno_time_list = []
-    reno_cw_list = []
+    reno_nored_cw_time_list = []
+    reno_nored_cw_list = []
     for line in lines:
-        reno_time, reno_cw = map(float, line.split())
-        reno_cw_list.append(reno_cw)
-        reno_time_list.append(reno_time)
-    #############3
+        reno_nored_cw_time, reno_nored_cw = map(float, line.split())
+        reno_nored_cw_list.append(reno_nored_cw)
+        reno_nored_cw_time_list.append(reno_nored_cw_time)
 
-    with open('files/problem3_v3/cw.newreno3', 'r') as file:
+    #############
+
+    # Plot Reno CW with RED wait false
+    with open('files/problem3_v3/cw.renoRED_3_2_false_duplex', 'r') as file:
         trace_data = file.read()
 
     # Parse the trace data
     lines = trace_data.strip().split('\n')
-    new_reno_time_list = []
-    new_reno_cw_list = []
+    reno_red_cw_time_list = []
+    reno_red_cw_list = []
     for line in lines:
-        new_reno_time, new_reno_cw = map(float, line.split())
-        new_reno_cw_list.append(new_reno_cw)
-        new_reno_time_list.append(new_reno_time)
+        reno_red_cw_time, reno_red_cw = map(float, line.split())
+        reno_red_cw_list.append(reno_red_cw)
+        reno_red_cw_time_list.append(reno_red_cw_time)
+
+    #############
+
+    # Plot Reno CW with RED wait true
+    with open('files/problem3_v3/cw.renoRED_3_2_true_duplex', 'r') as file:
+        trace_data = file.read()
+
+    # Parse the trace data
+    lines = trace_data.strip().split('\n')
+    reno_red_wait_cw_time_list = []
+    reno_red_wait_cw_list = []
+    for line in lines:
+        reno_red_wait_cw_time, reno_red_wait_cw = map(float, line.split())
+        reno_red_wait_cw_list.append(reno_red_wait_cw)
+        reno_red_wait_cw_time_list.append(reno_red_wait_cw_time)
 
     ################
     plt.figure(1)
-    plt.plot(reno_time_list, reno_cw_list, color='red', label='TCP Reno CW')
-    plt.plot(new_reno_time_list, new_reno_cw_list, color='blue', label='TCP New Reno CW')
+    plt.plot(reno_nored_cw_time_list, reno_nored_cw_list, color='red', label='TCP Reno CW no RED')
+    plt.plot(reno_red_cw_time_list, reno_red_cw_list, color='blue', label='TCP Reno CW RED wait_:false')
+    plt.plot(reno_red_wait_cw_time_list, reno_red_wait_cw_list, color='green', label='TCP Reno CW RED wait_:true')
 
     plt.xlabel('Time')
     plt.ylabel('CW')
@@ -78,62 +97,71 @@ def calculate_rto():
     plt.grid(True)
     plt.show()
 
-    ###############
+    ######################################################3
 
+    # Plot Reno Throughput without RED
     with open('files/problem3_v3/sor.reno1', 'r') as file:
         trace_data = file.read()
 
     # Parse the trace data
-    lines = trace_data.strip().split('\n')
+    reno_lines = trace_data.strip().split('\n')
 
-    RTT, CW, THROUGHPUT = computing_timeout(lines)
+    _, _, THROUGHPUT = computing_timeout(reno_lines)
 
-    plot_time = []
-    plot_rto = []
-    for line in RTT:
-        time = line[0]
-        rto = line[1]
+    reno_nored_tp_time = []
+    reno_nored_tp_tp = []
+    for line in THROUGHPUT:
+        nored_time = line[0]
+        nored_tp = line[1]
 
-        plot_time.append(time)
-        plot_rto.append(rto)
-
+        reno_nored_tp_time.append(nored_time)
+        reno_nored_tp_tp.append(nored_tp)
     ##################
-    with open('files/problem3_v3/sor.newreno3', 'r') as file:
+
+    # Plot Reno Throughout with RED wait false
+    with open('files/problem3_v3/sor.renoRED_3_2_false_duplex', 'r') as file:
         trace_data = file.read()
 
     # Parse the trace data
-    new_reno_lines = trace_data.strip().split('\n')
+    reno_lines = trace_data.strip().split('\n')
 
-    _, _, new_reno_THROUGHPUT = computing_timeout(new_reno_lines)
+    _, _, THROUGHPUT = computing_timeout(reno_lines)
 
-    new_reno_plot_time = []
-    new_reno_plot_tp = []
-    for line in new_reno_THROUGHPUT:
-        new_reno_time = line[0]
-        new_reno_tp = line[1]
+    reno_red_time = []
+    reno_red_tp = []
+    for line in THROUGHPUT:
+        red_time = line[0]
+        red_tp = line[1]
 
-        new_reno_plot_time.append(new_reno_time)
-        new_reno_plot_tp.append(new_reno_tp)
+        reno_red_time.append(red_time)
+        reno_red_tp.append(red_tp)
 
-    # new_reno_plot_time, new_reno_plot_tp = improve_throughput(new_reno_plot_time, new_reno_plot_tp)
+    ##############
 
+    # Plot Reno Throughout with RED wait true
+    with open('files/problem3_v3/sor.renoRED_3_2_true_duplex', 'r') as file:
+        trace_data = file.read()
+
+        # Parse the trace data
+    reno_lines = trace_data.strip().split('\n')
+
+    _, _, THROUGHPUT = computing_timeout(reno_lines)
+
+    reno_red_wait_time = []
+    reno_red_wait_tp = []
+    for line in THROUGHPUT:
+        red_wait_time = line[0]
+        red_wait_tp = line[1]
+
+        reno_red_wait_time.append(red_wait_time)
+        reno_red_wait_tp.append(red_wait_tp)
 
     ##############
     plt.figure(2)
 
-    reno_tp_time = []
-    reno_tp_tp = []
-    for line in THROUGHPUT:
-        time = line[0]
-        tp = line[1]
-
-        reno_tp_time.append(time)
-        reno_tp_tp.append(tp)
-
-    # reno_tp_time, reno_tp_tp = improve_throughput(reno_tp_time, reno_tp_tp)
-
-    plt.plot(reno_tp_time, reno_tp_tp, color='red', label='TCP Reno Throughput')
-    plt.plot(new_reno_plot_time, new_reno_plot_tp, color='blue', label='TCP New Reno Throughput')
+    plt.plot(reno_nored_tp_time, reno_nored_tp_tp, color='red', label='TCP Reno Throughput no RED')
+    plt.plot(reno_red_time, reno_red_tp, color='blue', label='TCP Reno Throughput RED wait_:false')
+    plt.plot(reno_red_wait_time, reno_red_wait_tp, color='green', label='TCP Reno Throughput RED wait_:true')
 
     plt.xlabel('Time')
     plt.ylabel('Kbps')
