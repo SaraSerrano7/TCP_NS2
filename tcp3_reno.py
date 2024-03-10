@@ -52,7 +52,34 @@ def calculate_rto():
         reno_time, reno_cw = map(float, line.split())
         reno_cw_list.append(reno_cw)
         reno_time_list.append(reno_time)
-#############3
+    #############3
+
+    with open('files/problem3_v3/cw.newreno3', 'r') as file:
+        trace_data = file.read()
+
+    # Parse the trace data
+    lines = trace_data.strip().split('\n')
+    new_reno_time_list = []
+    new_reno_cw_list = []
+    for line in lines:
+        new_reno_time, new_reno_cw = map(float, line.split())
+        new_reno_cw_list.append(new_reno_cw)
+        new_reno_time_list.append(new_reno_time)
+
+    ################
+    plt.figure(1)
+    plt.plot(reno_time_list, reno_cw_list, color='red', label='TCP Reno CW')
+    plt.plot(new_reno_time_list, new_reno_cw_list, color='blue', label='TCP New Reno CW')
+
+    plt.xlabel('Time')
+    plt.ylabel('CW')
+    plt.title('CW Evolution')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    ###############
+
     with open('files/problem3_v3/sor.reno1', 'r') as file:
         trace_data = file.read()
 
@@ -92,19 +119,7 @@ def calculate_rto():
     # new_reno_plot_time, new_reno_plot_tp = improve_throughput(new_reno_plot_time, new_reno_plot_tp)
 
 
-    ################
-    plt.figure(1)
-    plt.plot(reno_time_list, reno_cw_list, color='red', label='TCP Reno Simulated')
-    plt.plot(plot_time, plot_rto, color='blue', label='TCP Reno calculated')
-
-    plt.xlabel('Time')
-    plt.ylabel('CW')
-    plt.title('CW Evolution')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-    ###############
+    ##############
     plt.figure(2)
 
     reno_tp_time = []
